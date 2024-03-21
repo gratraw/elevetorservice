@@ -13,21 +13,31 @@ class Elevator(lowestFloor: Int) {
 
   def getQueue: ArrayBuffer[Int] = this.stopsQueue
 
+  def getCurrentFloor: Int = this.currentFloor
   def getDirection: ElevatorDirection = this.direction
 
   def getStatus: ElevatorStatus = this.status
 
   def getTargetFloor: Int = this.targetFloor
 
-  def addMultipleStops(stopCollection: Seq[Int]): Unit = stopCollection.foreach(addStop)
+  def addMultipleStops(stopCollection: Seq[(Int,Int)]): Unit = stopCollection.foreach(addStop)
 
-  def addStop(floorToAdd: Int): Unit = {
-    if (!isFloorInQueue(floorToAdd)) {
+  def addStop(callingFloor: Int, floorToAdd: Int): Unit = {
+    if (!isFloorInQueue(floorToAdd) && !isFloorInQueue(callingFloor)) {
       direction match
         case Idle =>
-          this.stopsQueue += floorToAdd
           this.targetFloor = floorToAdd
-          prepareElevator()
+          if this.currentFloor != callingFloor then
+            if this.currentFloor < callingFloor then
+              this.direction = GoingUp
+              this.stopsQueue +: Array(callingFloor, floorToAdd)
+            else
+              this.direction = GoingDown
+            this.stopsQueue +: Array(callingFloor, floorToAdd)
+          else {
+            this.stopsQueue += floorToAdd
+            prepareElevator()
+          }
         case GoingUp => addStopToQueue(floorToAdd, orderUp, orderDown, floorToAdd > targetFloor, (floor: Int) => floor > currentFloor)
         case GoingDown => addStopToQueue(floorToAdd, orderDown, orderUp, floorToAdd < targetFloor, (floor: Int) => floor < currentFloor)
     }
