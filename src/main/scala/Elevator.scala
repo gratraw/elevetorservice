@@ -1,24 +1,43 @@
-import scala.collection.mutable.ArrayBuffer
-import ElevatorStatus.*
 import ElevatorDirection.*
+import ElevatorStatus.*
 
-class Elevator {
+import scala.collection.mutable.ArrayBuffer
+
+class Elevator(lowestFloor: Int) {
   private var stopsQueue: ArrayBuffer[Int] = ArrayBuffer.empty[Int]
-  private var currentFloor: Int = 0
+  private var currentFloor: Int = lowestFloor
   private var targetFloor: Int = 0
   private var doorClosed: Boolean = true
   private var direction: ElevatorDirection = Idle
   private var status: ElevatorStatus = Stopped
-  private def closeDoor(): Unit = this.doorClosed = true
-  private def openDoor(): Unit = this.doorClosed = false
-  private def changeFloor(direction: Int): Unit = this.currentFloor += direction
+
+  def getQueue: ArrayBuffer[Int] = this.stopsQueue
+  def getDirection: ElevatorDirection = this.direction
+  def getStatus: ElevatorStatus = this.status
+  def getTargetFloor: Int = this.targetFloor
+  def addMultipleStops(stopCollection: Seq[Int]): Unit = stopCollection.foreach(addStop)
+  def addStop(floorToAdd: Int): Unit = {
+    if (!isFloorInQueue(floorToAdd)) {
+      direction match
+        case Idle =>
+          this.stopsQueue += floorToAdd
+          this.targetFloor = floorToAdd
+          prepareElevator()
+        case GoingUp => addStopToQueue(floorToAdd, orderUp, orderDown, floorToAdd > targetFloor, (floor: Int) => floor > currentFloor)
+        case GoingDown => addStopToQueue(floorToAdd, orderDown, orderUp, floorToAdd < targetFloor, (floor: Int) => floor < currentFloor)
+    }
+  }
+
   private def orderUp(upQueue: ArrayBuffer[Int]): ArrayBuffer[Int] = upQueue.sorted
   private def orderDown(downQueue: ArrayBuffer[Int]): ArrayBuffer[Int] = downQueue.sorted.reverse
-  private def isFloorStop: Boolean = currentFloor == stopsQueue.head
-  private def addStopToQueue(stopToAdd: Int, orderingNow: ArrayBuffer[Int] => ArrayBuffer[Int],
-                             orderingNext: ArrayBuffer[Int] => ArrayBuffer[Int], newTargetFloor: Boolean): Unit = {
-    val (stopsNow, stopsNext) = stopsQueue.splitAt(stopsQueue.indexOf(targetFloor))
-    stopsQueue = if (stopToAdd < currentFloor) stopsNow ++ orderingNext(stopsNext :+ stopToAdd)
+  private def addStopToQueue(stopToAdd: Int,
+                             orderingNow: ArrayBuffer[Int] => ArrayBuffer[Int],
+                             orderingNext: ArrayBuffer[Int] => ArrayBuffer[Int],
+                             newTargetFloor: Boolean,
+                             partitionRule: Int => Boolean): Unit = {
+    val (stopsNow, stopsNext) = stopsQueue.partition(partitionRule)
+    stopsQueue = if (stopToAdd > currentFloor)
+      stopsNow ++ orderingNext(stopsNext :+ stopToAdd)
     else if (newTargetFloor) {
       targetFloor = stopToAdd
       (stopsNow :+ stopToAdd) ++ stopsNext
@@ -26,32 +45,13 @@ class Elevator {
     else orderingNow(stopsNow :+ stopToAdd) ++ stopsNext
   }
 
-  def isFloorInQueue(floor: Int): Boolean = stopsQueue.contains(floor)
-  def addStop(floorToAdd: Int): Unit = {
-    direction match
-      case Idle => stopsQueue += floorToAdd
-      case GoingUp => addStopToQueue(floorToAdd, orderUp, orderDown, floorToAdd > targetFloor)
-      case GoingDown => addStopToQueue(floorToAdd, orderDown, orderUp, floorToAdd > targetFloor)
-    updateStatus()
-  }
-  def printCurrentStatus(elevatorNumber: Int): Unit = {
-    println(s"""Elevator ${elevatorNumber}:\n
-      \tCurrent floor: ${this.currentFloor}
-      \tStops queue: ${this.stopsQueue.mkString("[", ", ", "]")}
-      \tDoors direction: ${if (this.doorClosed) "closed" else "open"}""")
-  }
-  private def updateStatus(): Unit =
-    if (stopsQueue.isEmpty)
-      direction = Idle
-      status = Stopped
-    else if (currentFloor < stopsQueue.head)
-      direction = GoingUp
-      status = Moving
-    else
-      direction = GoingDown
-      status = Moving
+  private def isFloorInQueue(floor: Int): Boolean = stopsQueue.contains(floor)
 
-  private def removeStopFromQueue(stop: Int): Unit = stopsQueue -= stop
+  def printCurrentStatus(elevatorNumber: Int = 0): Unit = {
+    println(
+      s"$elevatorNumber\t\t\t${this.currentFloor}\t\t\t\t${this.status}\t\t${this.direction}\t\t${if (this.doorClosed) "closed" else "open"}\t${this.stopsQueue.mkString("[", ", ", "]")}")
+  }
+
   def proceed(): Unit = {
     direction match
       case Idle => updateStatus()
@@ -60,10 +60,34 @@ class Elevator {
       case _ if isFloorStop && doorClosed && status == Moving => //Elevator reaches a stop, opens door
         status = Stopped
         openDoor()
-      case _ if isFloorStop && !doorClosed && status == Stopped => //Elevator prepares to move further
-        removeStopFromQueue(currentFloor)
+      case _ if !doorClosed && status == Stopped => //Elevator prepares to move further
+        removeStopFromQueue(this.currentFloor)
         closeDoor()
         updateStatus()
       case _ => println("An unexpected error occurred")
   }
+
+  private def closeDoor(): Unit = this.doorClosed = true
+  private def openDoor(): Unit = this.doorClosed = false
+  private def changeFloor(direction: Int): Unit = this.currentFloor += direction
+  private def isFloorStop: Boolean = this.currentFloor == this.stopsQueue.head
+  private def prepareElevator(): Unit =
+    openDoor()
+    if (this.currentFloor < this.stopsQueue.head)
+      this.direction = GoingUp
+    else this.direction = GoingDown
+    this.status = Stopped
+
+  private def updateStatus(): Unit =
+    if (this.stopsQueue.isEmpty)
+      this.direction = Idle
+      this.status = Stopped
+    else if (this.currentFloor < this.stopsQueue.head)
+      this.direction = GoingUp
+      this.status = Moving
+    else
+      this.direction = GoingDown
+      this.status = Moving
+
+  private def removeStopFromQueue(stop: Int): Unit = this.stopsQueue -= stop
 }
