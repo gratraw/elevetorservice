@@ -1,22 +1,32 @@
 import scala.annotation.tailrec
 import scala.io.StdIn.readLine
-def printMenu():Unit = println("Menu:\nSimulate one step:\t\t\tstep or s\nPrint current status:\t\tprint or p\nAdd a new elevator request:\trequest or r\nDisplay controls:\t\t\tmenu or m\nExit the simulation:\t\texit or esc")
+
+def printMenu(): Unit =
+  println("Menu:\nSimulate one step:\t\t\tstep or s\n" +
+    "Print current status:\t\tprint or p\n" +
+    "Add a new elevator request:\trequest or r\n" +
+    "Display controls:\t\t\tmenu or m\n" +
+    "Exit the simulation:\t\texit or esc")
+
+def processUserInputToRequest(input: String): Array[(Int, Int)] =
+  input.split(",")
+    .map(_.split(" ")
+      .filter(_.nonEmpty)
+    ) collect {
+    case Array(Int(a), Int(b)) if a != b => (a, b)
+  }
 
 @tailrec
 def requestDataFromUser(message: String = ""): Array[(Int, Int)] = {
-  println(s"${message}\nEnter current floor and the target floor separated with space, i.e. -2 10.\nYou can add multiple combinations, use `,` to separate them.")
-  var combinations : Array[(Int, Int)] = readLine()
-      .split(",")
-      .map(_.split(" ")) collect {
-        case Array(a: String, b: String) if (a != b) && a.nonEmpty && b.nonEmpty => (a.toInt, b.toInt)
-      }
-
+  println(s"${message}Enter current floor and the target floor separated with space, i.e. -2 10.\nYou can add multiple combinations, use `,` to separate them.")
+  val combinations: Array[(Int, Int)] = processUserInputToRequest(readLine())
   if (combinations.isEmpty)
-    requestDataFromUser("Please provide correct values.")
+    requestDataFromUser("Please provide correct values.\n")
   else
-    println(combinations.mkString(" "))
+    println(s"Processing requests: ${combinations.mkString(" ")}")
     combinations
 }
+
 @main def interface(): Unit =
   println("Welcome to the elevator simulation!\nPlease enter number of elevators you would like to simulate")
   val numberOfElevators = readLine().toInt
@@ -27,7 +37,7 @@ def requestDataFromUser(message: String = ""): Array[(Int, Int)] = {
   val elevatorService: ElevatorService = new ElevatorService(numberOfElevators, lowestFloor, topFloor)
   var simulation: Boolean = true
   printMenu()
-  while(simulation){
+  while (simulation) {
     readLine() match {
       case "step" | "s" => elevatorService.step()
       case "print" | "p" => elevatorService.status()

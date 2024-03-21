@@ -6,12 +6,13 @@ import scala.collection.mutable.ArrayBuffer
 class ElevatorTest extends munit.FunSuite {
   test("test stopsQueue") {
     val elevator = new Elevator(-1)
-    elevator.addMultipleStops(Seq(-1,2,4,5,6,0,8,3))
-    assert(elevator.getQueue == ArrayBuffer[Int](-1,0,2,3,4,5,6,8))
+    elevator.addMultipleStops(Seq(-1, 2, 4, 5, 6, 0, 8, 3))
+    assert(elevator.getQueue == ArrayBuffer[Int](-1, 0, 2, 3, 4, 5, 6, 8))
     assert(elevator.getTargetFloor == -1)
     assert(elevator.getDirection == ElevatorDirection.GoingDown)
     assert(elevator.getStatus == ElevatorStatus.Stopped)
   }
+  
   test("test Elevator routes and steps") {
     val elevator = new Elevator(0)
     println(s"Elevator\tCurrent floor\tStatus\t\tDirection\tDoors\tStops queue:")
@@ -19,7 +20,7 @@ class ElevatorTest extends munit.FunSuite {
     elevator.addStop(6)
     elevator.addStop(4)
     elevator.addStop(1)
-    while(elevator.getQueue.nonEmpty) {
+    while (elevator.getQueue.nonEmpty) {
       elevator.printCurrentStatus(0)
       elevator.proceed()
     }
