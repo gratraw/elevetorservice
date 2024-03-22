@@ -21,11 +21,9 @@ class ElevatorTest extends munit.FunSuite {
     elevator.addRequestToQueue(ElevatorRequest(6,3))
     elevator.addRequestToQueue(ElevatorRequest(4,2))
     elevator.addRequestToQueue(ElevatorRequest(1,6))
-    var a = 0
-    while (elevator.getCurrentQueue.nonEmpty && a<50) {
+    while (elevator.getCurrentQueue.nonEmpty) {
       elevator.printCurrentStatus(0)
       elevator.proceed()
-      a+=1
     }
   }
 }

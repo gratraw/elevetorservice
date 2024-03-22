@@ -51,16 +51,16 @@ class Elevator(lowestFloor: Int) {
   def addRequestToQueue(request: ElevatorRequest): Unit = {
     request.requestDirection match {
       case _ if direction == Idle =>
-        if request.pickup <= this.currentFloor then setDirection(GoingDown) else setDirection(GoingUp)
+        if request.pickup < this.currentFloor then setDirection(GoingDown) else setDirection(GoingUp)
         getDirection match {
           case GoingUp => if (request.requestDirection == GoingUp) {
-            orderUp(stopsQueue(0) ++ request.bothFloors)
+            stopsQueue(0) = orderUp(stopsQueue(0) ++ request.bothFloors)
           } else {
             stopsQueue(0) += request.pickup
             stopsQueue(1) += request.target
           }
           case GoingDown => if (request.requestDirection == GoingDown) {
-            orderDown(stopsQueue(0) ++ request.bothFloors)
+            stopsQueue(0) = orderDown(stopsQueue(0) ++ request.bothFloors)
           } else {
             stopsQueue(0) += request.pickup
             stopsQueue(1) += request.target
@@ -108,6 +108,7 @@ class Elevator(lowestFloor: Int) {
         removeStopFromCurrentQueue(this.currentFloor)
         closeDoor()
         updateStatus()
+      case _ if doorClosed && status == Stopped => openDoor()
       case _ => println("An unexpected error occurred")
   }
 
