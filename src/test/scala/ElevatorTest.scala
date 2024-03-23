@@ -1,5 +1,7 @@
-import scala.collection.mutable.ArrayBuffer
+import ElevatorDirection.*
+import ElevatorStatus.*
 
+import scala.collection.mutable.ArrayBuffer
 // For more information on writing tests, see
 // https://scalameta.org/munit/docs/getting-started.html
 
@@ -7,37 +9,35 @@ class ElevatorTest extends munit.FunSuite {
   test("test stopsQueue") {
     val elevator = new Elevator(-1)
     elevator.addMultipleStops(Seq(ElevatorRequest(-1, 2), ElevatorRequest(4, 5), ElevatorRequest(6, 0), ElevatorRequest(8, 3)))
-    elevator.printCurrentStatus()
     assert(elevator.getAllQueues.flatten == ArrayBuffer[Int](-1, 2, 4, 5, 8, 6, 3, 0))
     assert(elevator.getTargetFloor == -1)
     assert(elevator.getDirection == ElevatorDirection.GoingDown)
     assert(elevator.getStatus == ElevatorStatus.Stopped)
   }
-  
+
   test("test Elevator routes and steps") {
-    val elevator = new Elevator(0)
-    println(s"Elevator\tCurrent floor\tStatus\t\tDirection\tDoors\tStops queue:")
-    elevator.addRequestToQueue(ElevatorRequest(0,5))
-    elevator.addRequestToQueue(ElevatorRequest(6,3))
-    elevator.addRequestToQueue(ElevatorRequest(4,2))
-    elevator.addRequestToQueue(ElevatorRequest(1,6))
-    elevator.printCurrentStatus(0)
-    while (elevator.getCurrentQueue.nonEmpty) {
-      if(elevator.getCurrentFloor == 5 && elevator.getStatus == ElevatorStatus.Stopped){
-        elevator.addRequestToQueue(ElevatorRequest(2,4))
-        elevator.addRequestToQueue(ElevatorRequest(8,3))
-      }
-      elevator.proceed()
-      elevator.printCurrentStatus(0)
-    }
-    elevator.addRequestToQueue(ElevatorRequest(7, 3))
+    val elevator = new Elevator(-1)
+    elevator.addRequestToQueue(ElevatorRequest(0, 5))
     elevator.addRequestToQueue(ElevatorRequest(6, 3))
     elevator.addRequestToQueue(ElevatorRequest(4, 2))
     elevator.addRequestToQueue(ElevatorRequest(1, 6))
+    val allStopsInOrder: ArrayBuffer[Int] = ArrayBuffer.empty
     while (elevator.getCurrentQueue.nonEmpty) {
+      if (elevator.getStatus == Stopped && (elevator.getDirection == GoingUp || elevator.getDirection == GoingDown) && !elevator.isDoorClosed) allStopsInOrder += elevator.getCurrentFloor
+      if (elevator.getCurrentFloor == 5 && elevator.getStatus == ElevatorStatus.Stopped) {
+        elevator.addRequestToQueue(ElevatorRequest(2, 4))
+        elevator.addRequestToQueue(ElevatorRequest(8, 3))
+      }
       elevator.proceed()
-      elevator.printCurrentStatus(0)
     }
+    elevator.addRequestToQueue(ElevatorRequest(7, 3))
+    elevator.addRequestToQueue(ElevatorRequest(5, -1))
+    elevator.addRequestToQueue(ElevatorRequest(-1, 2))
+    elevator.addRequestToQueue(ElevatorRequest(1, 6))
+    while (elevator.getCurrentQueue.nonEmpty) {
+      if (elevator.getStatus == Stopped && (elevator.getDirection == GoingUp || elevator.getDirection == GoingDown) && !elevator.isDoorClosed) allStopsInOrder += elevator.getCurrentFloor
+      elevator.proceed()
+    }
+    assert(allStopsInOrder == ArrayBuffer(0, 1, 5, 6, 8, 6, 4, 3, 2, 4, 7, 5, 3, -1, 1, 2, 6))
   }
-
 }
