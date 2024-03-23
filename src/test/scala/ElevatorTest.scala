@@ -21,9 +21,23 @@ class ElevatorTest extends munit.FunSuite {
     elevator.addRequestToQueue(ElevatorRequest(6,3))
     elevator.addRequestToQueue(ElevatorRequest(4,2))
     elevator.addRequestToQueue(ElevatorRequest(1,6))
+    elevator.printCurrentStatus(0)
     while (elevator.getCurrentQueue.nonEmpty) {
-      elevator.printCurrentStatus(0)
+      if(elevator.getCurrentFloor == 5 && elevator.getStatus == ElevatorStatus.Stopped){
+        elevator.addRequestToQueue(ElevatorRequest(2,4))
+        elevator.addRequestToQueue(ElevatorRequest(8,3))
+      }
       elevator.proceed()
+      elevator.printCurrentStatus(0)
+    }
+    elevator.addRequestToQueue(ElevatorRequest(7, 3))
+    elevator.addRequestToQueue(ElevatorRequest(6, 3))
+    elevator.addRequestToQueue(ElevatorRequest(4, 2))
+    elevator.addRequestToQueue(ElevatorRequest(1, 6))
+    while (elevator.getCurrentQueue.nonEmpty) {
+      elevator.proceed()
+      elevator.printCurrentStatus(0)
     }
   }
+
 }

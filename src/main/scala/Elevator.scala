@@ -18,15 +18,9 @@ class Elevator(lowestFloor: Int) {
 
   def getStatus: ElevatorStatus = this.status
 
-  def getTargetFloor: Int = this.targetFloor
+  private def setStatus(status: ElevatorStatus): Unit = this.status = status
 
-  private def updateTarget(): Unit = {
-    this.targetFloor = getDirection match {
-      case GoingUp => getCurrentQueue.maxOption.getOrElse(currentFloor)
-      case GoingDown => getCurrentQueue.minOption.getOrElse(currentFloor)
-      case Idle => currentFloor
-    }
-  }
+  def getTargetFloor: Int = this.targetFloor
 
   def howManyStopsToPickUp(request: ElevatorRequest): Int =
     request.requestDirection match {
@@ -45,6 +39,10 @@ class Elevator(lowestFloor: Int) {
 
   private def stepsForPotentialRequest(request: ElevatorRequest, ordering: ArrayBuffer[Int] => ArrayBuffer[Int], index: Int): Int =
     ordering(stopsQueue(index) :+ request.pickup).indexOf(request.pickup) + 1
+
+  private def orderUp(upQueue: ArrayBuffer[Int]): ArrayBuffer[Int] = upQueue.sorted
+
+  private def orderDown(downQueue: ArrayBuffer[Int]): ArrayBuffer[Int] = downQueue.sorted.reverse
 
   def addMultipleStops(stopCollection: Seq[ElevatorRequest]): Unit = stopCollection.foreach(addRequestToQueue)
 
@@ -82,33 +80,40 @@ class Elevator(lowestFloor: Int) {
     updateTarget()
   }
 
-  private def orderUp(upQueue: ArrayBuffer[Int]): ArrayBuffer[Int] = upQueue.sorted
+  private def updateTarget(): Unit = {
+    this.targetFloor = getDirection match {
+      case GoingUp => getCurrentQueue.maxOption.getOrElse(currentFloor)
+      case GoingDown => getCurrentQueue.minOption.getOrElse(currentFloor)
+      case Idle => currentFloor
+    }
+  }
 
-  private def orderDown(downQueue: ArrayBuffer[Int]): ArrayBuffer[Int] = downQueue.sorted.reverse
-
-  private def setDirection(direction: ElevatorDirection): Unit = this.direction = direction
+  def getCurrentQueue: ArrayBuffer[Int] = this.stopsQueue.head
 
   def getDirection: ElevatorDirection = this.direction
+
+  private def setDirection(direction: ElevatorDirection): Unit = this.direction = direction
 
   def printCurrentStatus(elevatorNumber: Int = 0): Unit = {
     println(
       s"$elevatorNumber\t\t\t${this.currentFloor}\t\t\t\t${this.status}\t\t${this.direction}\t\t${if (this.doorClosed) "closed" else "open"}\t${this.stopsQueue.map(_.mkString("[", ", ", "]")).mkString("[", ", ", "]")}")
   }
 
-  //TODO: fix
   def proceed(): Unit = {
     direction match
       case Idle => updateStatus()
       case GoingUp if doorClosed && !isFloorStop => changeFloor(1) //Elevator goes up
       case GoingDown if doorClosed && !isFloorStop => changeFloor(-1) //Elevator goes down
-      case _ if isFloorStop && doorClosed && status == Moving => //Elevator reaches a stop, opens door
+      case GoingUp | GoingDown if isFloorStop && doorClosed && status == Moving => //Elevator reaches a stop, opens door
         status = Stopped
         openDoor()
-      case _ if !doorClosed && status == Stopped => //Elevator prepares to move further
-        removeStopFromCurrentQueue(this.currentFloor)
-        closeDoor()
-        updateStatus()
-      case _ if doorClosed && status == Stopped => openDoor()
+      case GoingUp | GoingDown if status == Stopped => //Elevator opens door or prepares to move further
+        if (doorClosed)
+          openDoor()
+        else
+          removeStopFromCurrentQueue(this.currentFloor)
+          closeDoor()
+          updateStatus()
       case _ => println("An unexpected error occurred")
   }
 
@@ -124,8 +129,7 @@ class Elevator(lowestFloor: Int) {
   private def updateStatus(): Unit = {
     if (this.stopsQueue.flatten.isEmpty) {
       goIdle()
-    }
-    if (getCurrentQueue.isEmpty) {
+    } else if (getCurrentQueue.isEmpty) {
       rearrangeQueue()
       updateStatus()
     } else {
@@ -139,7 +143,7 @@ class Elevator(lowestFloor: Int) {
   }
 
   private def rearrangeQueue(): Unit = {
-    this.stopsQueue = this.stopsQueue.tail
+    this.stopsQueue = this.stopsQueue.tail :+ ArrayBuffer.empty
     if this.stopsQueue(0).isEmpty then
       this.stopsQueue(1).headOption match {
         case Some(firstStop: Int) => this.stopsQueue(0) += firstStop
@@ -147,21 +151,9 @@ class Elevator(lowestFloor: Int) {
       }
   }
 
-  private def prepareElevator(): Unit = {
-    openDoor()
-    getCurrentQueue.headOption match {
-      case Some(nextStop: Int) =>
-        if (this.currentFloor < nextStop) setDirection(GoingUp) else setDirection(GoingDown)
-        setStatus(Stopped)
-      case _ =>
-        goIdle()
-    }
-  }
-
   private def openDoor(): Unit = this.doorClosed = false
+
   private def goIdle(): Unit =
     setDirection(Idle)
     setStatus(Stopped)
-  private def setStatus(status: ElevatorStatus): Unit = this.status = status
-  def getCurrentQueue: ArrayBuffer[Int] = this.stopsQueue.head
 }
