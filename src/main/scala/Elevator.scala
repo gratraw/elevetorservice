@@ -4,22 +4,29 @@ import ElevatorStatus.*
 import scala.annotation.tailrec
 import scala.collection.mutable.ArrayBuffer
 
-class Elevator(lowestFloor: Int) {
+class Elevator(lowestFloor: Int, topFloor: Int) {
   private var stopsQueue: ArrayBuffer[ArrayBuffer[Int]] = ArrayBuffer.fill(3)(ArrayBuffer.empty)
   private var currentFloor: Int = if (lowestFloor < 0) 0 else lowestFloor
+  private val floorsRange: (Int, Int) = (lowestFloor, topFloor)
   private var targetFloor: Int = currentFloor
   private var doorClosed: Boolean = true
   private var direction: ElevatorDirection = Idle
   private var status: ElevatorStatus = Stopped
   private def setStatus(status: ElevatorStatus): Unit = this.status = status
 
+  /**
+   * Method that calculates number of stops it needs to take in order to fulfil the pickup request
+   * @param request - potential elevator request
+   * @param ordering - function that distinct and order queue to provide the potential place in the queue
+   * @param index - index of the queue in general stops queue
+   * @return Number of steps that are necessary to stop for pickup request
+   */
   private def stepsForPotentialRequest(request: ElevatorRequest, ordering: ArrayBuffer[Int] => ArrayBuffer[Int], index: Int): Int =
     ordering(stopsQueue(index) :+ request.pickup).indexOf(request.pickup) + 1
 
-  private def orderUp(upQueue: ArrayBuffer[Int]): ArrayBuffer[Int] = upQueue.distinct.sorted
-
-  private def orderDown(downQueue: ArrayBuffer[Int]): ArrayBuffer[Int] = downQueue.distinct.sorted.reverse
-
+  /**
+   * Updates a target floor after adding a new request to the queue
+   */
   private def updateTarget(): Unit =
     this.targetFloor = getDirection match {
       case GoingUp => getCurrentQueue.maxOption.getOrElse(currentFloor)
@@ -96,9 +103,15 @@ class Elevator(lowestFloor: Int) {
     steps + stepsForPotentialRequest(request, if (request.requestDirection == GoingUp) orderUp else orderDown, queueIndex)
   }
 
-  def addMultipleStops(stopCollection: Seq[ElevatorRequest]): Unit = stopCollection.foreach(addRequestToQueue)
+  def addMultipleStops(stopCollection: Seq[ElevatorRequest]): Unit = stopCollection.foreach(processRequest)
 
-  def addRequestToQueue(request: ElevatorRequest): Unit = {
+  def processRequest(request: ElevatorRequest): Boolean = {
+    if (isWithinRange(lowestFloor to topFloor, request.bothFloors))
+      addRequestToQueue(request)
+    else
+      false
+  }
+  private def addRequestToQueue(request: ElevatorRequest): Boolean = {
     request.requestDirection match {
       case _ if direction == Idle =>
         setDirection(if request.pickup < this.currentFloor then GoingDown else GoingUp)
@@ -116,7 +129,7 @@ class Elevator(lowestFloor: Int) {
             stopsQueue(0) += request.pickup
             stopsQueue(1) += request.target
           }
-          case _ =>
+          case _ => return false
         }
       case GoingUp if direction == GoingUp =>
         val queueIndex: Int = if this.currentFloor <= request.pickup then 0 else 2
@@ -127,10 +140,11 @@ class Elevator(lowestFloor: Int) {
       case _ => getDirection match {
         case GoingUp => stopsQueue(1) = orderDown(stopsQueue(1) ++ request.bothFloors)
         case GoingDown => stopsQueue(1) = orderUp(stopsQueue(1) ++ request.bothFloors)
-        case _ =>
+        case _ => return false
       }
     }
     updateTarget()
+    true
   }
 
   def getCurrentQueue: ArrayBuffer[Int] = this.stopsQueue.headOption match
@@ -141,7 +155,7 @@ class Elevator(lowestFloor: Int) {
 
   def printCurrentStatus(elevatorNumber: Int = 0): Unit = {
     println(
-      s"$elevatorNumber\t\t\t${this.currentFloor}\t\t\t\t${this.status}\t\t${this.direction}\t\t${if (this.doorClosed) "closed" else "open"}\t${this.stopsQueue.map(_.mkString("[", ", ", "]")).mkString("[", ", ", "]")}")
+      s"$elevatorNumber\t\t\t${this.currentFloor}\t\t\t\t${this.targetFloor}\t\t\t\t${this.status}\t\t${this.direction}\t\t${if (this.doorClosed) "closed" else "open"}\t${this.stopsQueue.map(_.mkString("[", ", ", "]")).mkString("[", ", ", "]")}")
   }
 
   def proceed(): Unit = {

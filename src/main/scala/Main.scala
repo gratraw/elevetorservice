@@ -16,6 +16,9 @@ def processUserInputToRequest(input: String): Array[ElevatorRequest] =
     case Array(Int(a), Int(b)) if a != b => ElevatorRequest(a, b)
   }
 
+def printRequestError(elevatorRequest: ElevatorRequest): Unit =
+  println(s"Unfortunately, the request to call an elevator from floor ${elevatorRequest.pickup} to ${elevatorRequest.target} please try again")
+
 @tailrec
 def requestDataFromUser(message: String = ""): Array[ElevatorRequest] = {
   println(s"${message}Enter current floor and the target floor separated with space, i.e. -2 10.\nYou can add multiple combinations, use `,` to separate them.")
@@ -43,7 +46,10 @@ def requestDataFromUser(message: String = ""): Array[ElevatorRequest] = {
       case "print" | "p" => elevatorService.status()
       case "request" | "r" =>
         val requestsToAdd = requestDataFromUser()
-        requestsToAdd.foreach(elevatorRequest => elevatorService.requestElevator(elevatorRequest))
+        requestsToAdd collect (elevatorRequest => {
+          if !elevatorService.requestElevator(elevatorRequest) then
+            printRequestError(elevatorRequest)
+        })
       case "menu" | "m" =>
       case "exit" | "esc" => simulation = false
       case _ => println("Sorry, wrong command")

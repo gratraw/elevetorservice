@@ -1,8 +1,4 @@
 
-
-// For more information on writing tests, see
-// https://scalameta.org/munit/docs/getting-started.html
-
 class InterfaceTest extends munit.FunSuite {
   test("test request parser all wrong values") {
     assert(processUserInputToRequest("something random, 12 aasd, 11, 3asd") sameElements Array[ElevatorRequest]())

@@ -2,8 +2,6 @@ import ElevatorDirection.*
 import ElevatorStatus.*
 
 import scala.collection.mutable.ArrayBuffer
-// For more information on writing tests, see
-// https://scalameta.org/munit/docs/getting-started.html
 
 class ElevatorServiceTest extends munit.FunSuite {
   test("test elevator selector") {

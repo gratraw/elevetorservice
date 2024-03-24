@@ -2,12 +2,9 @@ import ElevatorDirection.*
 import ElevatorStatus.*
 
 import scala.collection.mutable.ArrayBuffer
-// For more information on writing tests, see
-// https://scalameta.org/munit/docs/getting-started.html
-
 class ElevatorTest extends munit.FunSuite {
   test("test stopsQueue") {
-    val elevator = new Elevator(-1)
+    val elevator = new Elevator(-1, 10)
     elevator.addMultipleStops(Seq(ElevatorRequest(-1, 2), ElevatorRequest(4, 5), ElevatorRequest(6, 0), ElevatorRequest(8, 3)))
     assert(elevator.getAllQueues.flatten == ArrayBuffer[Int](-1, 2, 4, 5, 8, 6, 3, 0))
     assert(elevator.getTargetFloor == -1)
@@ -16,7 +13,7 @@ class ElevatorTest extends munit.FunSuite {
   }
 
   test("test Elevator routes and steps") {
-    val elevator = new Elevator(-1)
+    val elevator = new Elevator(-1, 10)
     elevator.addMultipleStops(Seq(ElevatorRequest(0, 5),ElevatorRequest(6, 3), ElevatorRequest(4, 2), ElevatorRequest(1, 6)))
     val allStopsInOrder: ArrayBuffer[Int] = ArrayBuffer.empty
     while (elevator.getCurrentQueue.nonEmpty) {
@@ -35,13 +32,13 @@ class ElevatorTest extends munit.FunSuite {
   }
 
   test("test stepsToPickup") {
-    val elevator = new Elevator(-1)
+    val elevator = new Elevator(-1, 10)
     elevator.addMultipleStops(Seq(ElevatorRequest(-1, 2), ElevatorRequest(4, 5), ElevatorRequest(6, 0), ElevatorRequest(8, 3)))
     assert(elevator.howManyStopsToPickUp(ElevatorRequest(7,4)) == 6)
   }
 
   test("test stepsToPickup emptyQueue") {
-    val elevator = new Elevator(-1)
+    val elevator = new Elevator(-1, 10)
     assert(elevator.howManyStopsToPickUp(ElevatorRequest(7, 4)) == 1)
   }
 }
