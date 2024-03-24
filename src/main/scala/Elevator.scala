@@ -16,9 +16,9 @@ class Elevator(lowestFloor: Int) {
   private def stepsForPotentialRequest(request: ElevatorRequest, ordering: ArrayBuffer[Int] => ArrayBuffer[Int], index: Int): Int =
     ordering(stopsQueue(index) :+ request.pickup).indexOf(request.pickup) + 1
 
-  private def orderUp(upQueue: ArrayBuffer[Int]): ArrayBuffer[Int] = upQueue.sorted
+  private def orderUp(upQueue: ArrayBuffer[Int]): ArrayBuffer[Int] = upQueue.distinct.sorted
 
-  private def orderDown(downQueue: ArrayBuffer[Int]): ArrayBuffer[Int] = downQueue.sorted.reverse
+  private def orderDown(downQueue: ArrayBuffer[Int]): ArrayBuffer[Int] = downQueue.distinct.sorted.reverse
 
   private def updateTarget(): Unit =
     this.targetFloor = getDirection match {
