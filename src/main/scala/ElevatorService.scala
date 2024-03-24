@@ -1,7 +1,8 @@
 class ElevatorService(numberOfElevators: Int, lowestFloor: Int, topFloor: Int) {
-  private val availableElevators: Seq[Elevator] = Seq.fill(numberOfElevators)(Elevator(lowestFloor, topFloor))
   val floorRange: Range = lowestFloor to topFloor
-  def requestElevator(request: ElevatorRequest): Boolean = 
+  private val availableElevators: Seq[Elevator] = Seq.fill(numberOfElevators)(Elevator(lowestFloor, topFloor))
+
+  def requestElevator(request: ElevatorRequest): Boolean =
     availableElevators.minBy(_.howManyStopsToPickUp(request)).processRequest(request)
 
   def performSimulationNTimes(numberOfSteps: Int, printStatus: Boolean): Unit =
@@ -10,6 +11,7 @@ class ElevatorService(numberOfElevators: Int, lowestFloor: Int, topFloor: Int) {
       step()
       performSimulationNTimes(numberOfSteps - 1, printStatus)
     }
+
   def step(): Unit = availableElevators.foreach(_.proceed())
 
   def status(): Unit = {

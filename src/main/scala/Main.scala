@@ -12,8 +12,8 @@ def printMenu(): Unit =
 def processUserInputToRequest(input: String): Array[ElevatorRequest] =
   input.split(",")
     .map(_.split(" ")
-      .filter(_.nonEmpty)
-    ) collect {
+           .filter(_.nonEmpty)
+         ) collect {
     case Array(Int(a), Int(b)) if a != b => ElevatorRequest(a, b)
   }
 

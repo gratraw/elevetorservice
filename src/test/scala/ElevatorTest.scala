@@ -2,6 +2,7 @@ import ElevatorDirection.*
 import ElevatorStatus.*
 
 import scala.collection.mutable.ArrayBuffer
+
 class ElevatorTest extends munit.FunSuite {
   test("test stopsQueue") {
     val elevator = new Elevator(-1, 10)
@@ -14,16 +15,16 @@ class ElevatorTest extends munit.FunSuite {
 
   test("test Elevator routes and steps") {
     val elevator = new Elevator(-1, 10)
-    elevator.addMultipleStops(Seq(ElevatorRequest(0, 5),ElevatorRequest(6, 3), ElevatorRequest(4, 2), ElevatorRequest(1, 6)))
+    elevator.addMultipleStops(Seq(ElevatorRequest(0, 5), ElevatorRequest(6, 3), ElevatorRequest(4, 2), ElevatorRequest(1, 6)))
     val allStopsInOrder: ArrayBuffer[Int] = ArrayBuffer.empty
     while (elevator.getCurrentQueue.nonEmpty) {
       if (elevator.getStatus == Stopped && (elevator.getDirection == GoingUp || elevator.getDirection == GoingDown) && !elevator.isDoorClosed) allStopsInOrder += elevator.getCurrentFloor
       if (elevator.getCurrentFloor == 5 && elevator.getStatus == ElevatorStatus.Stopped) {
-        elevator.addMultipleStops(Seq(ElevatorRequest(2, 4),ElevatorRequest(8, 3)))
+        elevator.addMultipleStops(Seq(ElevatorRequest(2, 4), ElevatorRequest(8, 3)))
       }
       elevator.proceed()
     }
-    elevator.addMultipleStops(Seq(ElevatorRequest(7, 3),ElevatorRequest(5, -1),ElevatorRequest(-1, 2),ElevatorRequest(1, 6)))
+    elevator.addMultipleStops(Seq(ElevatorRequest(7, 3), ElevatorRequest(5, -1), ElevatorRequest(-1, 2), ElevatorRequest(1, 6)))
     while (elevator.getCurrentQueue.nonEmpty) {
       if (elevator.getStatus == Stopped && (elevator.getDirection == GoingUp || elevator.getDirection == GoingDown) && !elevator.isDoorClosed) allStopsInOrder += elevator.getCurrentFloor
       elevator.proceed()
@@ -34,7 +35,7 @@ class ElevatorTest extends munit.FunSuite {
   test("test stepsToPickup") {
     val elevator = new Elevator(-1, 10)
     elevator.addMultipleStops(Seq(ElevatorRequest(-1, 2), ElevatorRequest(4, 5), ElevatorRequest(6, 0), ElevatorRequest(8, 3)))
-    assert(elevator.howManyStopsToPickUp(ElevatorRequest(7,4)) == 6)
+    assert(elevator.howManyStopsToPickUp(ElevatorRequest(7, 4)) == 6)
   }
 
   test("test stepsToPickup emptyQueue") {
