@@ -3,10 +3,11 @@ import scala.io.StdIn.readLine
 
 def printMenu(): Unit =
   println("Menu:\nSimulate one step:\t\t\tstep or s\n" +
-    "Print current status:\t\tprint or p\n" +
-    "Add a new elevator request:\trequest or r\n" +
-    "Display controls:\t\t\tmenu or m\n" +
-    "Exit the simulation:\t\texit or esc")
+            "Simulate multiple steps:\t\tnsteps or n\n" +
+            "Print current status:\t\tprint or p\n" +
+            "Add a new elevator request:\trequest or r\n" +
+            "Display controls:\t\t\tmenu or m\n" +
+            "Exit the simulation:\t\texit or esc")
 
 def processUserInputToRequest(input: String): Array[ElevatorRequest] =
   input.split(",")
@@ -16,6 +17,13 @@ def processUserInputToRequest(input: String): Array[ElevatorRequest] =
     case Array(Int(a), Int(b)) if a != b => ElevatorRequest(a, b)
   }
 
+def performNumberOfSteps(): (Int, Boolean) = {
+  print("Enter number of steps to simulate: ")
+  val numberOfLines: Int = readLine().toIntOption.getOrElse(0)
+  println("Do you want to print each step? y/n")
+  val printSteps: Boolean = Seq("y", "yes").contains(readLine().toLowerCase)
+  (numberOfLines, printSteps)
+}
 def printRequestError(elevatorRequest: ElevatorRequest): Unit =
   println(s"Unfortunately, the request to call an elevator from floor ${elevatorRequest.pickup} to ${elevatorRequest.target} please try again")
 
@@ -41,8 +49,11 @@ def requestDataFromUser(message: String = ""): Array[ElevatorRequest] = {
   var simulation: Boolean = true
   printMenu()
   while (simulation) {
-    readLine() match {
+    print("Enter command: ")
+    readLine().toLowerCase match {
       case "step" | "s" => elevatorService.step()
+      case "nsteps" | "n" => val (steps, printStatus) = performNumberOfSteps()
+        elevatorService.performSimulationNTimes(steps, printStatus)
       case "print" | "p" => elevatorService.status()
       case "request" | "r" =>
         val requestsToAdd = requestDataFromUser()
@@ -50,7 +61,7 @@ def requestDataFromUser(message: String = ""): Array[ElevatorRequest] = {
           if !elevatorService.requestElevator(elevatorRequest) then
             printRequestError(elevatorRequest)
         })
-      case "menu" | "m" =>
+      case "menu" | "m" => printMenu()
       case "exit" | "esc" => simulation = false
       case _ => println("Sorry, wrong command")
     }

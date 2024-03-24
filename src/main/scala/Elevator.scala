@@ -89,6 +89,11 @@ class Elevator(lowestFloor: Int, topFloor: Int) {
   def getStatus: ElevatorStatus = this.status
   def getTargetFloor: Int = this.targetFloor
 
+  /**
+   * 
+   * @param request - potential request which ElevatorService needs a score for.
+   * @return number of stops that are required to pickup the caller.
+   */
   def howManyStopsToPickUp(request: ElevatorRequest): Int = {
     val sameDirection: Boolean = this.direction == request.requestDirection
     val canPickupInSameQueue: Boolean = sameDirection && ((this.direction == GoingUp && this.currentFloor <= request.pickup) || (this.direction == GoingDown && this.currentFloor >= request.pickup))

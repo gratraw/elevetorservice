@@ -4,6 +4,12 @@ class ElevatorService(numberOfElevators: Int, lowestFloor: Int, topFloor: Int) {
   def requestElevator(request: ElevatorRequest): Boolean = 
     availableElevators.minBy(_.howManyStopsToPickUp(request)).processRequest(request)
 
+  def performSimulationNTimes(numberOfSteps: Int, printStatus: Boolean): Unit =
+    if (numberOfSteps != 0) {
+      if printStatus then status()
+      step()
+      performSimulationNTimes(numberOfSteps - 1, printStatus)
+    }
   def step(): Unit = availableElevators.foreach(_.proceed())
 
   def status(): Unit = {
