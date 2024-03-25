@@ -91,4 +91,4 @@ def requestDataFromUser(message: String = ""): Array[ElevatorRequest] = {
       case _ => println("Sorry, wrong command")
     }
   }
-// elev -1, floors not int
+  

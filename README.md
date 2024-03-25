@@ -62,19 +62,20 @@ If the elevator fulfills all the requests it's set to Idle stage with doors clos
 ## Usage
 
 1. Create the environment:
-    1. Enter the number of available elevators for the simulation
-    2. Provide lowest and the top floor
+    1. Enter the number of available elevators for the simulation.
+    2. Provide lowest and the top floor.
 2. Start the simulation:
-    1. See current status of all elevators using command `print` or `p`
-    2. Perform one step of the simulation using command `step` or `s`
-    3. Perform n-steps of the simulation using command `nsteps` or `n`
-    4. Perform all queued steps of simulation using command `continue`
-    5. See all possible commands using `menu` or `m`
+    1. See current status of all elevators using command `print` or `p`.
+    2. Perform one step of the simulation using command `step` or `s`.
+    3. Perform n-steps of the simulation using command `nsteps` or `n`.
+    4. Perform all queued steps of simulation using command `continue`.
+    5. See all possible commands using `menu` or `m`.
     6. Add one or more elevator requests:
         1. One request: `calling_floor target_floor` (i.e.: `1 10` - call an elevator to the 1st floor, move up to the
-           10th floor)
+           10th floor).
         2. Multiple requests separated
-           by `,`: `call_floor1 target_floor1, call_floor2 target_floor2, call_floor3 target_floor3`
+           by `,`: `call_floor1 target_floor1, call_floor2 target_floor2, call_floor3 target_floor3`.
+3. Finish the simulation with `exit`, `esc`, or `e` command.
 
 #### Potential improvements
 
@@ -89,7 +90,11 @@ If the elevator fulfills all the requests it's set to Idle stage with doors clos
 - Add support for total number of users in the elevator.
 
 #### Difference from the initial task
-Suggested solution was FCFS(first-come, first-serve) - this is good if we would like to have only one person in the elevator.
-The approach presented here is allowing multiple requests the be placed in one elevator and fulfilling them along the way.
-For example if elevator is on the 2nd floor moving up from floor 1 to 10, and someone requests an elevator on the 4th floor to 6th. It will pickup the caller and fulfill this request along the way.
+
+Suggested solution was FCFS(first-come, first-serve) - this is good if we would like to have only one person in the
+elevator.
+The approach presented here is allowing multiple requests the be placed in one elevator and fulfilling them along the
+way.
+For example if elevator is on the 2nd floor moving up from floor 1 to 10, and someone requests an elevator on the 4th
+floor to 6th. It will pickup the caller and fulfill this request along the way.
 Current solution also supports doors and the direction of movement.
