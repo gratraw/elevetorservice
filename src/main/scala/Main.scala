@@ -1,5 +1,5 @@
 import scala.annotation.tailrec
-import scala.io.StdIn.readLine
+import scala.io.StdIn.{readInt, readLine}
 
 def printMenu(): Unit =
   println("Menu:\nSimulate one step:\t\t\tstep or s\n" +
@@ -8,6 +8,36 @@ def printMenu(): Unit =
             "Add a new elevator request:\trequest or r\n" +
             "Display controls:\t\t\tmenu or m\n" +
             "Exit the simulation:\t\texit or esc")
+
+@tailrec
+def getValidInt(numberToCompare: Int)(implicit condition: (Int, Int) => Boolean): Int = {
+  val potentialValue = getInt
+  if (condition(potentialValue, numberToCompare)) potentialValue
+  else {
+    println("Enter a valid number")
+    getValidInt(numberToCompare)
+  }
+}
+
+def getInt: Int = {
+  try
+    readInt()
+  catch
+    case e: java.lang.NumberFormatException =>
+      println("Enter a valid number")
+      getInt
+}
+
+def initiateElevatorService: ElevatorService = {
+  implicit val numberValidator: (Int, Int) => Boolean = (numberToCheck: Int, numberToCompare: Int) => numberToCheck > numberToCompare
+  println("\nPlease enter number of elevators you would like to simulate")
+  val numberOfElevators: Int = getValidInt(0)
+  println("Please enter lowest floor in the simulation")
+  val lowestFloor: Int = getInt
+  println("Please enter top floor in the simulation")
+  val topFloor: Int = getValidInt(lowestFloor)
+  new ElevatorService(numberOfElevators, lowestFloor, topFloor)
+}
 
 def processUserInputToRequest(input: String): Array[ElevatorRequest] =
   input.split(",")
@@ -39,13 +69,8 @@ def requestDataFromUser(message: String = ""): Array[ElevatorRequest] = {
 }
 
 @main def interface(): Unit =
-  println("Welcome to the elevator simulation!\nPlease enter number of elevators you would like to simulate")
-  val numberOfElevators = readLine().toInt
-  println("Please enter lowest floor in the simulation")
-  val lowestFloor = readLine().toInt
-  println("Please enter top floor in the simulation")
-  val topFloor = readLine().toInt
-  val elevatorService: ElevatorService = new ElevatorService(numberOfElevators, lowestFloor, topFloor)
+  println("Welcome to the elevator simulation!")
+  val elevatorService: ElevatorService = initiateElevatorService
   var simulation: Boolean = true
   printMenu()
   while (simulation) {
@@ -62,7 +87,8 @@ def requestDataFromUser(message: String = ""): Array[ElevatorRequest] = {
             printRequestError(elevatorRequest)
         })
       case "menu" | "m" => printMenu()
-      case "exit" | "esc" => simulation = false
+      case "exit" | "esc" | "e" => simulation = false
       case _ => println("Sorry, wrong command")
     }
   }
+// elev -1, floors not int

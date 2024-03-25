@@ -12,6 +12,7 @@ the destination floor on the panel before entering the elevator.
 - If the elevator already closed the doors but new request is created on the same floor it will not change floor but
   will open the doors.
 - All requests that are set for different direction are placed in the next queue to be fulfilled.
+- Number of elevators is fixed and cannot be altered.
 
 ##### _Example_:
 
@@ -83,6 +84,9 @@ If the elevator fulfills all the requests it's set to Idle stage with doors clos
 - Friendlier and more versatile user interface.
 - Change the request sequence to some other collection that's ordered by nature.
 - Add scalaDoc to all methods.
+- Printing only changes in the queue instead of all information.
+- Add support for malfunctioning elevators.
+- Add support for total number of users in the elevator.
 
 #### Difference from the initial task
 Suggested solution was FCFS(first-come, first-serve) - this is good if we would like to have only one person in the elevator.
